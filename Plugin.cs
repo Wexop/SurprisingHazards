@@ -74,7 +74,7 @@ using UnityEngine;
 
         private void LoadConfigs()
         {
-            visibleRange = Config.Bind("General" ,"visibleRange", 15f, "Hazards visible range. Every player must have the same value, or this will cause desync. No need to restart the game :)");
+            visibleRange = Config.Bind("General" ,"visibleRange", 8f, "Hazards visible range. Every player must have the same value, or this will cause desync. No need to restart the game :)");
             CreateFloatConfig(visibleRange);
         }
         
