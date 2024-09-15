@@ -25,9 +25,11 @@ public class SurprisingHazardBehavior: NetworkBehaviour
     private int state;
     private int lastState;
 
+    private float visibleRange;
+
     public void Start()
     {
-        float visibleRange = SurprisingHazardsPlugin.instance.visibleRange.Value;
+        visibleRange = SurprisingHazardsPlugin.instance.GetCustomDistance(parent.name);
 
         baseScale = parent.transform.localScale;
         audioSource.maxDistance = visibleRange + 5;
@@ -44,7 +46,7 @@ public class SurprisingHazardBehavior: NetworkBehaviour
         StartOfRound.Instance?.allPlayerScripts?.ToList().ForEach(player =>
         {
             if (Vector3.Distance(player.transform.position, transform.position) <=
-                SurprisingHazardsPlugin.instance.visibleRange.Value)
+                visibleRange)
             {
                 state = 1;
             }

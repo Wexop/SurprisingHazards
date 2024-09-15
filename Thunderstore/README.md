@@ -6,7 +6,7 @@ With this mod map hazards will become visible only on a certain distance, be car
 
 Hazards will also play a random voice line when they become visible, for funny moments !
 
-You can config the visible distance
+You can config the visible distance, every player must have the same values, or it will cause desyncs
 
 ## Credits
 
