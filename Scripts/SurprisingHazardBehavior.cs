@@ -81,6 +81,7 @@ public class SurprisingHazardBehavior: NetworkBehaviour
     public void SetClip(int audioClip)
     {
         audioSource.clip = audioClips[audioClip];
+        audioSource.volume = SurprisingHazardsPlugin.instance.audioVolume.Value;
         audioSource.Play();
     }
     

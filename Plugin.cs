@@ -24,7 +24,7 @@ using UnityEngine;
 
         const string GUID = "wexop.surprising_hazards";
         const string NAME = "SurprisingHazards";
-        const string VERSION = "1.0.2";
+        const string VERSION = "1.0.3";
 
         public static SurprisingHazardsPlugin instance;
 
@@ -38,6 +38,8 @@ using UnityEngine;
         public ConfigEntry<string> customVisibleRange;
         
         public ConfigEntry<string> disabledHazards;
+        
+        public ConfigEntry<float> audioVolume;
         
         public ConfigEntry<string> hazardsNameList;
 
@@ -211,6 +213,13 @@ using UnityEngine;
                 "Disabled hazards, write a list like : turret,landmine. The name must be the hazard prefab name, it works with modded hazards too. Every player must have the same value, or this will cause desync. No need to restart the game :)"
             );
             CreateStringConfig(disabledHazards);
+            
+            audioVolume = Config.Bind("General" ,
+                "audioVolume", 
+                1f, 
+                "Hazards voice lines volume. No need to restart the game :)"
+            );
+            CreateFloatConfig(audioVolume, 0f, 2f);
             
             hazardsNameList = Config.Bind("NotConfig" ,
                 "hazardsNameList", 
