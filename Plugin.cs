@@ -24,15 +24,22 @@ using UnityEngine;
 
         const string GUID = "wexop.surprising_hazards";
         const string NAME = "SurprisingHazards";
-        const string VERSION = "1.0.1";
+        const string VERSION = "1.0.2";
 
         public static SurprisingHazardsPlugin instance;
 
         public GameObject surprisingGameObject;
         public Dictionary<ulong, RegisteredHazard> RegisteredHazards = new Dictionary<ulong, RegisteredHazard>();
 
+        public ConfigEntry<bool> affectVanilla;
+        public ConfigEntry<bool> affectModded;
+        
         public ConfigEntry<float> visibleRange;
         public ConfigEntry<string> customVisibleRange;
+        
+        public ConfigEntry<string> disabledHazards;
+        
+        public ConfigEntry<string> hazardsNameList;
 
         void Awake()
         {
@@ -69,6 +76,9 @@ using UnityEngine;
 
         public static void RegisterHazard(NetworkBehaviour networkBehaviour)
         {
+            if(!instance.affectVanilla.Value) return;
+            if (HazardDisabled(networkBehaviour.transform.parent.gameObject.name)) return;
+            
             var component = Instantiate(instance.surprisingGameObject, Vector3.zero, Quaternion.identity, networkBehaviour.transform.parent);
             var surpriseComponent = component.GetComponent<SurprisingHazardBehavior>();
             surpriseComponent.parent = networkBehaviour.transform.parent.gameObject;
@@ -86,6 +96,9 @@ using UnityEngine;
         
         public static void RegisterModdedHazard(NetworkBehaviour networkBehaviour)
         {
+            if(!instance.affectModded.Value) return;
+            if (HazardDisabled(networkBehaviour.name)) return;
+            
             var component = Instantiate(instance.surprisingGameObject, Vector3.zero, Quaternion.identity, networkBehaviour.transform);
             var surpriseComponent = component.GetComponent<SurprisingHazardBehavior>();
             surpriseComponent.parent = networkBehaviour.gameObject;
@@ -127,16 +140,84 @@ using UnityEngine;
 
         }
 
+        public static string ConditionalString(string value)
+        {
+            var finalString = value.ToLower();
+            while (finalString.Contains(" "))
+            {
+                finalString = finalString.Replace(" ", "");
+            }
+
+            return finalString;
+        }
+
+        public static bool HazardDisabled(string name)
+        {
+
+            if (instance.disabledHazards.Value == "") return false;
+            
+            var nameSearch = ConditionalString(name);
+            var disable = false;
+            
+            instance.disabledHazards.Value.Split(",").ToList().ForEach(hazard =>
+            {
+                var hazardName = ConditionalString(hazard);
+                if (nameSearch.Contains(hazardName)) disable = true;
+            });
+            
+            return disable;
+        }
+
+        public string GetHazardsNames()
+        {
+            string hazardsNames = "TurretContainer,Landmine,SpikeRoofTrapHazard,";
+            MapObjects.mapObjects.ForEach(mapObject =>
+            {
+                hazardsNames += $"{mapObject.mapObject.prefabToSpawn.name},";
+            });
+
+            return hazardsNames;
+        }
+
         private void LoadConfigs()
         {
+            affectVanilla = Config.Bind("General" ,
+                "affectVanilla", 
+                true, 
+                "Enable to affect vanilla map hazards. Every player must have the same value. No need to restart the game :)"
+            );
+            CreateBoolConfig(affectVanilla);
+            
+            affectModded = Config.Bind("General" ,
+                "affectModded", 
+                true, 
+                "Enable to affect modded map hazards. Every player must have the same value. No need to restart the game :)"
+            );
+            CreateBoolConfig(affectModded);
+            
             visibleRange = Config.Bind("General" ,"visibleRange", 8f, "Hazards visible range. Every player must have the same value, or this will cause desync. No need to restart the game :)");
             CreateFloatConfig(visibleRange);
+            
             customVisibleRange = Config.Bind("General" ,
                 "customVisibleRange", 
                 "turret:15,spikeRoofTrap:8,landmine:8", 
                 "Hazards visible range. The name must be the hazard prefab name, it works with modded hazards too. Every player must have the same value, or this will cause desync. No need to restart the game :)"
                 );
             CreateStringConfig(customVisibleRange);
+            
+            disabledHazards = Config.Bind("General" ,
+                "disabledHazards", 
+                "", 
+                "Disabled hazards, write a list like : turret,landmine. The name must be the hazard prefab name, it works with modded hazards too. Every player must have the same value, or this will cause desync. No need to restart the game :)"
+            );
+            CreateStringConfig(disabledHazards);
+            
+            hazardsNameList = Config.Bind("NotConfig" ,
+                "hazardsNameList", 
+                GetHazardsNames(), 
+                "Current map hazards detected in your mod pack, this is not a config. You can refresh to default to refresh list data."
+            );
+            CreateStringConfig(hazardsNameList);
         }
         
         private void CreateFloatConfig(ConfigEntry<float> configEntry, float min = 0f, float max = 100f)
@@ -164,6 +245,15 @@ using UnityEngine;
         private void CreateStringConfig(ConfigEntry<string> configEntry, bool requireRestart = false)
         {
             var exampleSlider = new TextInputFieldConfigItem(configEntry, new TextInputFieldOptions()
+            {
+                RequiresRestart = requireRestart
+            });
+            LethalConfigManager.AddConfigItem(exampleSlider);
+        }
+        
+        private void CreateBoolConfig(ConfigEntry<bool> configEntry, bool requireRestart = false)
+        {
+            var exampleSlider = new BoolCheckBoxConfigItem(configEntry, new BoolCheckBoxOptions()
             {
                 RequiresRestart = requireRestart
             });

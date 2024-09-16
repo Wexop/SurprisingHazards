@@ -8,7 +8,7 @@ public class LandminePatch
 {
     [HarmonyPatch("Start")]
     [HarmonyPostfix]
-    public static void Patchstart(Landmine __instance)
+    public static void PatchStart(Landmine __instance)
     {
         SurprisingHazardsPlugin.RegisterHazard(__instance);
     }

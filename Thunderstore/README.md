@@ -8,6 +8,8 @@ Hazards will also play a random voice line when they become visible, for funny m
 
 You can config the visible distance, every player must have the same values, or it will cause desyncs
 
+You can config if it affect vanilla, modded hazards. There is also a blacklist config.
+
 ## Credits
 
 Thanks to [Wesley](https://thunderstore.io/c/lethal-company/p/Magic_Wesley/) for all his voice lines ! Check out his works :)
